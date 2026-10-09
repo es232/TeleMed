@@ -1,0 +1,76 @@
+const CACHE_NAME = 'telemed-nabha-v1'; // Increment this version number every time you change any core files.
+
+// List all files that are absolutely essential for the app to function offline.
+// This includes all HTML, CSS, and critical third-party links (like Font Awesome).
+const urlsToCache = [
+  '/', // The root path
+  '/index.html', // (If you have a main index page, add it)
+  '/home.html', // (Assuming this file exists as per navbar links)
+  '/symptom-checker.html',
+  '/pharmacy.html',
+  '/consultation.html', // (Assuming this file exists as per navbar links)
+  '/sos.html',
+  '/health-tracker.html', // (Assuming this file exists as per navbar links)
+  '/manifest.json', // The PWA configuration file
+  // Critical external CSS and Fonts (Be careful with CORS/caching external links)
+  'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
+  // You should also include any local images/icons (e.g., /icons/icon-192.png)
+];
+
+// 1. Installation: Open the cache and store all the specified files.
+self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Install Event: Caching static assets...');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        return cache.addAll(urlsToCache);
+      })
+      .catch((err) => {
+        console.error('[Service Worker] Failed to cache essential assets:', err);
+      })
+  );
+});
+
+// 2. Activation: Clean up old caches to save user space.
+self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activate Event: Cleaning old caches...');
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[Service Worker] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
+// 3. Fetch: Intercept network requests and serve from cache first.
+self.addEventListener('fetch', (event) => {
+  // We only cache GET requests for security and simplicity.
+  if (event.request.method !== 'GET') return;
+  
+  // Respond with the cached asset if available, otherwise fetch from network.
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Cache hit - return the cached response
+        if (response) {
+          return response;
+        }
+        
+        // No match in cache - fetch from the network
+        return fetch(event.request);
+      })
+      .catch(() => {
+        // If the fetch also fails (e.g., network completely down),
+        // we can return a default offline page if we had one.
+        // For now, we'll just log an error.
+        console.log('[Service Worker] Fetch failed and no cache found for:', event.request.url);
+      })
+  );
+});

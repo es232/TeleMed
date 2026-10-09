@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <title>SOS - Telemedicine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #FED0BB, #fff);
+      color: #333;
+      scroll-behavior: smooth;
+    }
+
+    /* ===== Navbar ===== */
+    header {
+      background: #461220;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h2 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+    nav {
+      display: flex;
+      gap: 18px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: 0.3s;
+    }
+    nav a:hover { background: #8C2F39; }
+    nav a.active { background: #B23A48; }
+
+    /* ===== Sections ===== */
+    section, .extra-section {
+      margin: 2rem auto;
+      max-width: 1000px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      animation: fadeInUp 1s ease;
+    }
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== SOS Button ===== */
+    .sos-btn {
+      padding: 1.5rem 3.5rem;
+      font-size: 1.8rem;
+      background: linear-gradient(135deg, #B23A48, #8C2F39);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.3s;
+      animation: pulse 1.5s infinite;
+    }
+    .sos-btn:hover { transform: scale(1.05); }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 5px #B23A48; }
+      50% { box-shadow: 0 0 25px #B23A48; }
+      100% { box-shadow: 0 0 5px #B23A48; }
+    }
+
+    /* ===== Emergency Contacts ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: rgba(255,255,255,0.9);
+      border-radius: 15px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+      backdrop-filter: blur(8px);
+    }
+    .card:hover { transform: translateY(-6px) scale(1.03); }
+    .card i {
+      font-size: 2rem;
+      color: #B23A48;
+      margin-bottom: 0.6rem;
+    }
+
+    /* ===== First Aid ===== */
+    .instructions {
+      background: #fff5f5;
+      border-left: 5px solid #B23A48;
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-top: 2rem;
+    }
+
+    /* ===== Patient Record Table ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    th { background: #B23A48; color: white; }
+    tr:hover { background: #fff0f0; }
+
+    /* ===== Map Placeholder ===== */
+    .map-placeholder {
+      background: linear-gradient(135deg, #eee, #ddd);
+      height: 220px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 15px;
+      margin-top: 1rem;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+    .map-placeholder::after {
+      content: "";
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(178,58,72,0.3);
+      animation: pulseMap 2s infinite;
+    }
+    @keyframes pulseMap {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+
+    /* ===== SOS Logs Timeline ===== */
+    .timeline {
+      position: relative;
+      padding-left: 20px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: #B23A48;
+      border-radius: 2px;
+    }
+    .timeline-entry {
+      margin: 1rem 0;
+      padding-left: 20px;
+      position: relative;
+    }
+    .timeline-entry::before {
+      content: "🚨";
+      position: absolute;
+      left: -2px;
+      top: 0;
+    }
+
+    /* ===== Status Bars ===== */
+    .status-bar {
+      margin-top: 1rem;
+    }
+    .bar {
+      height: 18px;
+      background: #eee;
+      border-radius: 10px;
+      margin: 8px 0;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #B23A48, #8C2F39);
+      width: 0;
+      border-radius: 10px;
+      animation: fillBar 2s forwards;
+    }
+    @keyframes fillBar { from { width: 0; } }
+
+    /* ===== Voice SOS ===== */
+    .voice-btn {
+      margin-top: 1rem;
+      background: #461220;
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+    .voice-btn::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0; left: 0;
+      border-radius: 50px;
+      background: rgba(255,255,255,0.2);
+      transform: scale(0);
+      transition: transform 0.3s;
+    }
+    .voice-btn:active::after { transform: scale(1.2); }
+  </style>
+</head>
+<body>
+  <!-- ===== Navbar ===== -->
+  <header>
+    <h2><i class="fa-solid fa-notes-medical"></i> Telemedicine</h2>
+    <nav>
+      <a href="home.html"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="symptom-checker.html"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a href="pharmacy.html"><i class="fa-solid fa-pills"></i> Pharmacy</a>
+      <a href="consultation.html"><i class="fa-solid fa-user-doctor"></i> Consultation</a>
+      <a href="sos.html" class="active"><i class="fa-solid fa-triangle-exclamation"></i> SOS</a>
+      <a href="health-tracker.html"><i class="fa-solid fa-heart-pulse"></i> Health Tracker</a>
+    </nav>
+  </header>
+
+  <!-- ===== SOS Section ===== -->
+  <section>
+    <h1 style="color:#8C2F39;text-align:center;">🚨 Emergency SOS</h1>
+    <p style="text-align:center;">Tap the button below to alert ambulance, doctors, and family immediately.</p>
+    <div style="text-align:center;">
+      <button class="sos-btn" onclick="triggerSOS()">
+        <i class="fa-solid fa-phone-volume"></i> CALL HELP NOW
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== Emergency Contacts ===== -->
+  <section>
+    <h2 style="color:#8C2F39;text-align:center;">📞 Quick Emergency Contacts</h2>
+    <div class="grid">
+      <div class="card"><i class="fa-solid fa-hospital"></i><h3>Nearest Hospital</h3><p>📞 123-456-789</p></div>
+      <div class="card"><i class="fa-solid fa-truck-medical"></i><h3>Ambulance</h3><p>📞 108</p></div>
+      <div class="card"><i class="fa-solid fa-user-nurse"></i><h3>On-call Doctor</h3><p>📞 98765-43210</p></div>
+      <div class="card"><i class="fa-solid fa-shield-halved"></i><h3>Police Helpline</h3><p>📞 100</p></div>
+    </div>
+    <div class="instructions">
+      <h3>⛑️ First Aid Tips</h3>
+      <ul>
+        <li>Stay calm and keep patient stable.</li>
+        <li>Check breathing and pulse immediately.</li>
+        <li>Control bleeding with a clean cloth.</li>
+        <li>Do not give food/water if unconscious.</li>
+        <li>Apply CPR if no heartbeat is detected.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== Patient Record ===== -->
+  <section>
+    <h2 style="color:#8C2F39;">🧾 Critical Patient Record</h2>
+    <table>
+      <tr><th>Name</th><th>Age</th><th>Condition</th><th>Last Consultation</th><th>Doctor</th><th>Prescribed</th></tr>
+      <tr><td>John Doe</td><td>45</td><td>Heart Patient</td><td>10 Sept 2025</td><td>Dr. Smith</td><td>Aspirin, BP Monitor</td></tr>
+    </table>
+  </section>
+
+  <!-- ===== Live Location ===== -->
+  <section>
+    <h2 style="color:#8C2F39;">🗺️ Live Location</h2>
+    <div class="map-placeholder">📍 Tracking Location...</div>
+  </section>
+
+  <!-- ===== SOS Logs ===== -->
+  <section>
+    <h2 style="color:#8C2F39;">📜 Past SOS Alerts</h2>
+    <div class="timeline">
+      <div class="timeline-entry">14 Sept 2025 - SOS Triggered at 5:42 PM</div>
+      <div class="timeline-entry">08 Sept 2025 - SOS Triggered at 11:20 AM</div>
+    </div>
+  </section>
+
+  <!-- ===== Device Status ===== -->
+  <section>
+    <h2 style="color:#8C2F39;">📡 Device Status</h2>
+    <div class="status-bar">
+      <p>🔋 Battery</p>
+      <div class="bar"><div class="bar-fill" style="width:82%"></div></div>
+      <p>📶 Network</p>
+      <div class="bar"><div class="bar-fill" style="width:95%"></div></div>
+    </div>
+  </section>
+
+  <!-- ===== Voice SOS ===== -->
+  <section style="text-align:center;">
+    <h2 style="color:#8C2F39;">🎤 Voice Activated SOS</h2>
+    <p>Press the button & say "Help" to trigger SOS</p>
+    <button class="voice-btn" onclick="voiceSOS()"><i class="fa-solid fa-microphone"></i> Activate Voice SOS</button>
+  </section>
+
+  <script>
+    function triggerSOS() {
+      alert("🚨 Emergency Alert Sent!\nAmbulance & nearby contacts notified.");
+    }
+    function voiceSOS() {
+      alert("🎤 Voice SOS Triggered!\nSystem recognized emergency command.");
+    }
+
+    if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+        .then(reg => console.log('Service Worker Registered successfully:', reg.scope))
+        .catch(err => console.log('Service Worker Registration Failed:', err));
+    });
+  }
+  </script>
+</body>
+</html>

@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <title>Health Tracker - Telemedicine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* -------------------- General Styles -------------------- */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background: #FEECE9;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(90deg,#461220,#B23A48);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        nav {
+            display: flex;
+            gap: 18px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        nav a.active {
+            background: #fff;
+            color: #B23A48;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            text-align: center;
+            color: #8C2F39;
+            margin-bottom: 2rem;
+        }
+
+        /* -------------------- Card Grid -------------------- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .card {
+            background: #fff5f5;
+            border-radius: 15px;
+            padding: 1.2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card i {
+            font-size: 2rem;
+            color: #B23A48;
+            margin-bottom: 0.6rem;
+        }
+
+        .card h3 {
+            margin: 0.4rem 0;
+            color: #461220;
+            font-size: 1rem;
+        }
+
+        .card p {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #8C2F39;
+        }
+
+        /* -------------------- Charts -------------------- */
+        .chart-container {
+            margin: 2.5rem 0;
+        }
+
+        canvas {
+            max-width: 100%;
+            border-radius: 15px;
+            background: #fff;
+            padding: 1rem;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+        }
+
+        /* -------------------- Sections -------------------- */
+        .medications,
+        .goals,
+        .ai-suggestions,
+        .records {
+            margin-top: 2.5rem;
+            padding: 1.5rem;
+            border-radius: 15px;
+            background: #fceeee;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        h3 {
+            color: #8C2F39;
+            margin-bottom: 1rem;
+        }
+
+        .medications ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .medications li {
+            background: #fff;
+            margin: 0.5rem 0;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .toggle {
+            width: 42px;
+            height: 22px;
+            background: #ccc;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 1px;
+            left: 1px;
+            border-radius: 50%;
+            background: white;
+            transition: 0.3s;
+        }
+
+        .toggle.active {
+            background: #B23A48;
+        }
+
+        .toggle.active::before {
+            transform: translateX(20px);
+        }
+
+        .progress {
+            margin: 1rem 0;
+        }
+
+        .progress-label {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 18px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg,#B23A48,#461220);
+            width: 0%;
+            transition: width 1s;
+        }
+
+        /* -------------------- Patient Records -------------------- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: #B23A48;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #fff5f5;
+        }
+
+        .ai-suggestions {
+            background: #fdf2f2;
+            border-left: 6px solid #8C2F39;
+        }
+
+        /* -------------------- Log Vitals Section -------------------- */
+        .log-vitals {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            align-items: flex-end;
+            margin-bottom: 2.5rem;
+            padding: 1.5rem;
+            background: #fff;
+            border: 1px solid #fceeee;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .log-vitals h3 {
+            grid-column: span 3;
+            margin-top: 0;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #461220;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            grid-column: span 3;
+        }
+
+        #saveLogBtn {
+            background: linear-gradient(135deg, #B23A48, #8C2F39);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(140,47,57,0.3);
+            grid-column: span 3;
+        }
+
+        #saveLogBtn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .offline-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #461220;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .sync-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .sync-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .records .sync-btn {
+            display: block;
+            margin-bottom: 1rem;
+            margin-left: 0;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .log-vitals {
+                grid-template-columns: 1fr;
+            }
+
+            .log-vitals h3,
+            #saveLogBtn,
+            .input-group textarea {
+                grid-column: span 1 !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h2><i class="fa-solid fa-notes-medical"></i> Telemedicine</h2>
+        <nav>
+            <a href="home.html"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="symptom-checker.html"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+            <a href="pharmacy.html"><i class="fa-solid fa-pills"></i> Pharmacy</a>
+            <a href="consultation.html"><i class="fa-solid fa-user-doctor"></i> Consultation</a>
+            <a href="sos.html"><i class="fa-solid fa-triangle-exclamation"></i> SOS</a>
+            <a href="health-tracker.html" class="active"><i class="fa-solid fa-heart-pulse"></i> Health Tracker</a>
+        </nav>
+    </header>
+
+    <div class="container">
+
+        <h1>📊 Health Tracker Dashboard</h1>
+
+        <!-- Log Vitals Section -->
+        <div class="log-vitals">
+            <h3><i class="fa-solid fa-plus-circle"></i> Log New Vitals (Offline Ready)</h3>
+            <div class="input-group">
+                <label for="bpInput">Blood Pressure (Systolic/Diastolic)</label>
+                <input type="text" id="bpInput" placeholder="e.g., 120/80 mmHg">
+            </div>
+            <div class="input-group">
+                <label for="hrInput">Heart Rate (Pulse)</label>
+                <input type="number" id="hrInput" placeholder="e.g., 72 bpm">
+            </div>
+            <div class="input-group">
+                <label for="spo2Input">Oxygen Saturation (SpO2)</label>
+                <input type="number" id="spo2Input" placeholder="e.g., 98 %">
+            </div>
+            <div class="input-group">
+                <label for="tempInput">Body Temperature (°C)</label>
+                <input type="number" step="0.1" id="tempInput" placeholder="e.g., 37.0 °C">
+            </div>
+            <div class="input-group" style="grid-column: span 3;">
+                <label for="notesInput">Notes/Symptoms</label>
+                <textarea id="notesInput" placeholder="e.g., Headache, mild fatigue, took medicine."></textarea>
+            </div>
+            <button id="saveLogBtn"><i class="fa-solid fa-save"></i> Save Log Locally</button>
+        </div>
+
+        <!-- Vital Cards -->
+        <div class="grid">
+            <div class="card"><i class="fa-solid fa-heart-pulse"></i><h3>Heart Rate</h3><p>78 bpm</p></div>
+            <div class="card"><i class="fa-solid fa-tachometer-alt"></i><h3>Blood Pressure</h3><p>120/80</p></div>
+            <div class="card"><i class="fa-solid fa-temperature-high"></i><h3>Temperature</h3><p>98.6°F</p></div>
+            <div class="card"><i class="fa-solid fa-lungs"></i><h3>Oxygen</h3><p>97%</p></div>
+            <div class="card"><i class="fa-solid fa-walking"></i><h3>Steps</h3><p>6,200</p></div>
+            <div class="card"><i class="fa-solid fa-fire-flame-curved"></i><h3>Calories</h3><p>1,540 kcal</p></div>
+            <div class="card"><i class="fa-solid fa-bed"></i><h3>Sleep</h3><p>6.5 hrs</p></div>
+        </div>
+
+        <!-- Patient Records -->
+        <div class="records">
+            <h3><i class="fa-solid fa-file-medical"></i> Patient Vitals Records (Local Logs: <span id="log-count">0</span>)</h3>
+            <p>Data below is logged locally in your browser's database and will be synced when you connect.</p>
+            <button id="syncBtn" class="sync-btn" disabled>
+                <i class="fa-solid fa-cloud-upload-alt"></i> Sync <span id="log-count">0</span> Logs to Server
+            </button>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Heart Rate</th>
+                        <th>Oxygen Sat.</th>
+                        <th>Blood Pressure</th>
+                        <th>Temperature</th>
+                        <th style="width: 30%;">Notes/Symptoms</th>
+                    </tr>
+                </thead>
+                <tbody id="vitals-log-body">
+                    <tr>
+                        <td colspan="6" style="color: #6b5a59;">No local logs found. Start tracking your vitals!</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Activity Chart -->
+        <div class="chart-container">
+            <h3>7-Day Activity Trend</h3>
+            <canvas id="healthChart"></canvas>
+        </div>
+
+        <!-- Medications -->
+        <div class="medications">
+            <h3><i class="fa-solid fa-capsules"></i> Medications & Reminders</h3>
+            <ul>
+                <li>
+                    <span>**Lisinopril 10mg** (Morning)</span>
+                    <div class="toggle" onclick="toggleReminder(this)"></div>
+                </li>
+                <li>
+                    <span>**Metformin 500mg** (Evening)</span>
+                    <div class="toggle active" onclick="toggleReminder(this)"></div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Goals -->
+        <div class="goals">
+            <h3><i class="fa-solid fa-crosshairs"></i> Health Goals Progress</h3>
+            <div class="progress">
+                <div class="progress-label">Daily Step Goal (8,000 steps)</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 77%;"></div>
+                </div>
+                <small>77% Complete</small>
+            </div>
+        </div>
+
+        <!-- AI Suggestions -->
+        <div class="ai-suggestions">
+            <h3><i class="fa-solid fa-robot"></i> AI Health Suggestions</h3>
+            <p>Based on your logged data, the system suggests focusing on hydration and ensuring 8 hours of sleep for optimal recovery. You are meeting your basic activity goals.</p>
+        </div>
+
+    </div>
+
+    <div class="offline-indicator" id="offline-status">
+        <i class="fa-solid fa-wifi-slash"></i> Offline Mode Active. Data saved locally.
+    </div>
+
+    <script>
+        // -------------------- IndexedDB Setup & Offline Management --------------------
+        let db;
+        const DB_NAME = 'TelemedPHR';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'vitals';
+
+        const logCountElements = document.querySelectorAll('#log-count');
+        const syncBtn = document.getElementById('syncBtn');
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                    }
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log('[IndexedDB] Connection successful.');
+                    resolve(db);
+                    loadAllVitals();
+                    setupNetworkStatus();
+                };
+
+                request.onerror = (event) => {
+                    console.error("[IndexedDB] Error opening database:", event.target.errorCode);
+                    reject("Error opening database.");
+                };
+            });
+        }
+
+        function saveVitals(data) {
+            if (!db) { alert('Database not ready. Please refresh.'); return; }
+
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const newEntry = { ...data, timestamp: new Date().toISOString() };
+            const request = store.add(newEntry);
+
+            request.onsuccess = () => {
+                console.log('Vitals saved offline!');
+                alert('Vitals saved successfully to local storage!');
+
+                document.getElementById('bpInput').value = '';
+                document.getElementById('tempInput').value = '';
+                document.getElementById('hrInput').value = '';
+                document.getElementById('spo2Input').value = '';
+                document.getElementById('notesInput').value = '';
+
+                loadAllVitals();
+            };
+
+            request.onerror = (event) => {
+                console.error("Save failed:", event.target.error);
+                alert('Failed to save log.');
+            };
+        }
+
+        function loadAllVitals() {
+            if (!db) return;
+
+            const transaction = db.transaction([STORE_NAME], 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.getAll();
+
+            request.onsuccess = (event) => {
+                const vitals = event.target.result;
+                const logContainer = document.getElementById('vitals-log-body');
+                logContainer.innerHTML = '';
+
+                logCountElements.forEach(el => el.textContent = vitals.length);
+                syncBtn.disabled = vitals.length === 0;
+
+                if (vitals.length === 0) {
+                    logContainer.innerHTML = '<tr><td colspan="6" style="color: #6b5a59;">No local logs found. Start tracking your vitals!</td></tr>';
+                    return;
+                }
+
+                vitals.reverse().forEach(entry => {
+                    const date = new Date(entry.timestamp).toLocaleString();
+                    const row = logContainer.insertRow();
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td>${entry.heartRate || '--'} bpm</td>
+                        <td>${entry.oxygenSat || '--'} %</td>
+                        <td>${entry.bloodPressure || '--'}</td>
+                        <td>${entry.temperature ? entry.temperature + '°C' : '--'}</td>
+                        <td style="text-align: left;">${entry.notes || 'N/A'}</td>
+                    `;
+                });
+            };
+        }
+
+        function clearLocalVitals() {
+            if (!db) return;
+
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.clear();
+
+            request.onsuccess = () => console.log('Local Vitals cleared after successful sync.');
+            request.onerror = (event) => console.error('Failed to clear local vitals:', event.target.error);
+        }
+
+        async function syncDataToServer() {
+            if (!db) { alert('Database not ready.'); return; }
+
+            const transaction = db.transaction([STORE_NAME], 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.getAll();
+            syncBtn.disabled = true;
+
+            request.onsuccess = async (event) => {
+                const vitalsToSync = event.target.result;
+
+                if (vitalsToSync.length === 0) {
+                    alert('No new logs to sync.');
+                    syncBtn.disabled = false;
+                    return;
+                }
+
+                try {
+                    await new Promise(r => setTimeout(r, 1500));
+                    alert(`✅ Sync Complete! ${vitalsToSync.length} logs *simulated* uploaded to the server.`);
+                    clearLocalVitals();
+                    loadAllVitals();
+                } catch (error) {
+                    alert(`Network Error: Could not connect to the server. Logs are still saved locally.`);
+                    console.error('Network Error during sync:', error);
+                } finally {
+                    if (navigator.onLine) loadAllVitals();
+                    else syncBtn.disabled = true;
+                }
+            };
+        }
+
+        function setupNetworkStatus() {
+            const offlineStatusEl = document.getElementById('offline-status');
+            const updateStatus = () => {
+                if (navigator.onLine) {
+                    offlineStatusEl.style.display = 'none';
+                    loadAllVitals();
+                } else {
+                    offlineStatusEl.style.display = 'block';
+                    syncBtn.disabled = true;
+                }
+            };
+
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        syncBtn.addEventListener('click', () => {
+            if (!navigator.onLine) { alert("You must be connected to the internet to sync data."); return; }
+            syncDataToServer();
+        });
+
+        document.getElementById('saveLogBtn').addEventListener('click', () => {
+            const bp = document.getElementById('bpInput').value.trim();
+            const temp = document.getElementById('tempInput').value.trim();
+            const hr = document.getElementById('hrInput').value.trim();
+            const spo2 = document.getElementById('spo2Input').value.trim();
+            const notes = document.getElementById('notesInput').value.trim();
+
+            if (!bp && !temp && !hr && !spo2 && !notes) {
+                alert("Please enter at least one vital measurement or note.");
+                return;
+            }
+
+            saveVitals({ bloodPressure: bp, temperature: temp, heartRate: hr, oxygenSat: spo2, notes: notes });
+        });
+
+        openDB().catch(console.error);
+
+        // Chart.js
+        const ctx = document.getElementById('healthChart');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+                datasets: [
+                    { label: 'Steps', data: [5000,6200,7100,4300,8200,9100,7600], backgroundColor: 'rgba(178,58,72,0.7)', borderRadius: 8 },
+                    { label: 'Calories', data: [1200,1340,1600,1100,1450,1700,1580], backgroundColor: 'rgba(70,18,32,0.7)', borderRadius: 8 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        function toggleReminder(el) {
+            el.classList.toggle('active');
+            alert(el.classList.contains('active') ? "🔔 Reminder On" : "⏸️ Reminder Off");
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+                    .then(reg => console.log('Service Worker Registered successfully:', reg.scope))
+                    .catch(err => console.log('Service Worker Registration Failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Telemedicine Consultation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #FED0BB;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* FIX: Allow vertical scrolling */
+            overflow-y: auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #461220, #8C2F39, #B23A48);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        header nav ul {
+            display: flex;
+            gap: 1.2rem;
+            list-style: none;
+        }
+        
+        header nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        
+        header nav ul li a:hover {
+            color: #FED0BB;
+        }
+        
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        /* Sidebar Doctor List */
+        .doctor-list {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        .doctor-card {
+            background: #FCB9B2;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .doctor-card:hover {
+            transform: scale(1.03);
+        }
+        
+        .doctor-info {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+        
+        .doctor-info img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .doctor-info h4 {
+            margin-bottom: 0.2rem;
+        }
+        
+        .doctor-info span {
+            font-size: 0.85rem;
+            color: #555;
+        }
+        
+        .book-btn {
+            padding: 0.4rem 0.8rem;
+            background: #8C2F39;
+            color: white;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        
+        .book-btn:hover {
+            background: #B23A48;
+        }
+
+        /* New status indicator styling */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-indicator .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-indicator.available .dot {
+            background-color: #4CAF50;
+        }
+        
+        .status-indicator.not-available .dot {
+            background-color: #F44336;
+        }
+
+        /* Consultation Section */
+        .consultation-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Video Section */
+        .video-container {
+            display: flex;
+            gap: 1rem;
+            flex: 1;
+        }
+        
+        #local-video-container, #remote-video-container {
+            flex: 1;
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #local-video, #remote-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        
+        #local-video {
+            display: none;
+        }
+        
+        #status-message {
+            color: #eee;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .video-controls {
+            position: absolute;
+            bottom: 10px;
+            display: flex;
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.5rem;
+            border-radius: 20px;
+        }
+        
+        .video-controls button {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            padding: 0.6rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .video-controls button i {
+            font-size: 1.2rem;
+            color: #461220;
+        }
+        
+        .video-controls button.active {
+            background: #B23A48;
+            color: white;
+        }
+        
+        .video-controls button.active i {
+            color: white;
+        }
+        
+        .video-controls button.muted i {
+            color: #ccc;
+        }
+        .video-controls button.muted.active {
+            background: #999;
+        }
+
+        /* Chat Section */
+        .chat-section {
+            display: flex;
+            flex-direction: column;
+            background: #fefefe;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .chat-header {
+            background: #8C2F39;
+            color: white;
+            padding: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        
+        .msg {
+            max-width: 70%;
+            padding: 0.7rem;
+            border-radius: 12px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+            position: relative;
+            animation: fadeIn 0.4s ease-in;
+        }
+        
+        .msg.doctor {
+            background: #FCDEC0;
+            align-self: flex-start;
+        }
+        
+        .msg.user {
+            background: #B23A48;
+            color: white;
+            align-self: flex-end;
+        }
+        
+        .chat-footer {
+            padding: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f3f3f3;
+        }
+        
+        .chat-footer input {
+            flex: 1;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        
+        .chat-footer button {
+            background: #8C2F39;
+            border: none;
+            color: white;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .chat-footer button:hover {
+            background: #B23A48;
+        }
+
+        /* Video Call Controls Section */
+        .call-controls-container {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .call-controls-container h3 {
+            margin-bottom: 1rem;
+            color: #461220;
+        }
+        
+        .call-controls-container input {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 0.6rem;
+        }
+        
+        .call-controls-container .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .call-controls-container button {
+            flex: 1;
+            padding: 0.7rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        #createCallBtn {
+            background: #461220;
+            color: white;
+        }
+        
+        #createCallBtn:hover {
+            background: #8C2F39;
+        }
+        
+        #joinCallBtn {
+            background: #B23A48;
+            color: white;
+        }
+        
+        #joinCallBtn:hover {
+            background: #8C2F39;
+        }
+        
+        #hangupBtn {
+            background: #ccc;
+            color: #333;
+        }
+        
+        #hangupBtn:hover {
+            background: #999;
+        }
+        
+        .user-info-bar {
+            background: #f3f3f3;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .user-info-bar span {
+            font-weight: 600;
+            color: #461220;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .modal-content button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #461220;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Booking form specific styles */
+        .booking-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .booking-form input, .booking-form button {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        /* Animations and Scrollbar */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #B23A48; border-radius: 6px; }
+
+        @media (max-width: 768px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            header nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+            .video-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fa-solid fa-user-doctor"></i> Telemedicine Consultation</h1>
+        <nav>
+            <ul>
+                <li><a href="home.html">Home</a></li>
+                <li><a href="symptom-checker.html">Symptom Checker</a></li>
+                <li><a href="pharmacy.html">Pharmacy</a></li>
+                <li><a href="consultation.html">Consultation</a></li>
+                <li><a href="sos.html">SOS</a></li>
+                <li><a href="health-tracker.html">Health Tracker</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Doctor List -->
+        <div class="doctor-list">
+            <h2>Available Doctors</h2>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/736x/b7/b9/52/b7b952774a146d6f83c9c2837e2c86b1.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. Priya Sharma</h4>
+                        <span>Pediatrics | ⭐ 4.8</span>
+                        <div class="status-indicator available">
+                            <span class="dot"></span>
+                            <span>Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/736x/55/1e/be/551ebea5df82b9f2a65c3b2299827f7a.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. Arjun Mehta</h4>
+                        <span>General | ⭐ 4.6</span>
+                        <div class="status-indicator not-available">
+                            <span class="dot"></span>
+                            <span>Not Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/736x/e4/21/53/e421532f811456254888062b32938833.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. Emily Carter</h4>
+                        <span>Dermatology | ⭐ 4.9</span>
+                        <div class="status-indicator available">
+                            <span class="dot"></span>
+                            <span>Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/564x/48/84/c2/4884c2e646733221b212f43d04f21650.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. Rajesh Gupta</h4>
+                        <span>Cardiology | ⭐ 4.7</span>
+                        <div class="status-indicator not-available">
+                            <span class="dot"></span>
+                            <span>Not Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/564x/ac/e4/41/ace441362e55a3067140a3952f205c43.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. Maria Sanchez</h4>
+                        <span>Neurology | ⭐ 4.5</span>
+                        <div class="status-indicator available">
+                            <span class="dot"></span>
+                            <span>Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/564x/0f/5d/4c/0f5d4c833e24443906a51d8d3289063d.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. David Chen</h4>
+                        <span>Orthopedics | ⭐ 4.9</span>
+                        <div class="status-indicator available">
+                            <span class="dot"></span>
+                            <span>Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/564x/72/06/f3/7206f376a953a817688029c0b1156d6d.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. Sophie Miller</h4>
+                        <span>Oncology | ⭐ 4.8</span>
+                        <div class="status-indicator not-available">
+                            <span class="dot"></span>
+                            <span>Not Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/564x/be/9c/e6/be9ce6594d4d621532d56149a42f604b.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. Kenji Tanaka</h4>
+                        <span>Psychiatry | ⭐ 4.7</span>
+                        <div class="status-indicator available">
+                            <span class="dot"></span>
+                            <span>Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/564x/e7/f1/ee/e7f1ee09b552140a430d88e001229f64.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. Olivia Wilson</h4>
+                        <span>Gynecology | ⭐ 4.6</span>
+                        <div class="status-indicator not-available">
+                            <span class="dot"></span>
+                            <span>Not Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-info">
+                    <img src="https://i.pinimg.com/564x/d5/a2/82/d5a282b0e6e736a707a21356ac500361.jpg" alt="doctor">
+                    <div>
+                        <h4>Dr. Alex Rodriguez</h4>
+                        <span>Gastroenterology | ⭐ 4.8</span>
+                        <div class="status-indicator available">
+                            <span class="dot"></span>
+                            <span>Available</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-btn">Book</button>
+            </div>
+        </div>
+
+        <!-- Consultation Section -->
+        <div class="consultation-section">
+            <div class="call-controls-container">
+                <h3>Video Consultation</h3>
+                <div class="user-info-bar">
+                    <p>Your User ID: <span id="userIdDisplay">Loading...</span></p>
+                </div>
+                <input type="text" id="callIdInput" placeholder="Enter Call ID to join">
+                <div class="btn-group">
+                    <button id="createCallBtn">Create New Call</button>
+                    <button id="joinCallBtn">Join Call</button>
+                    <button id="hangupBtn" style="display:none;">Hang Up</button>
+                </div>
+            </div>
+
+            <div class="video-container">
+                <div id="local-video-container">
+                    <video id="local-video" autoplay muted playsinline></video>
+                    <div id="local-status" style="position: absolute; bottom: 20px; left: 20px; color: white;"></div>
+                    <div class="video-controls">
+                        <button id="toggleAudioBtn"><i class="fa-solid fa-microphone"></i></button>
+                        <button id="toggleVideoBtn"><i class="fa-solid fa-video"></i></button>
+                    </div>
+                </div>
+                <div id="remote-video-container">
+                    <video id="remote-video" autoplay playsinline></video>
+                    <div id="remote-status" style="position: absolute; bottom: 20px; left: 20px; color: white;"></div>
+                    <!-- Controls are only for local stream, but showing them here for UI consistency -->
+                    <div class="video-controls">
+                        <button><i class="fa-solid fa-microphone-slash"></i></button>
+                        <button><i class="fa-solid fa-video-slash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-section">
+                <div class="chat-header">
+                    <span>Live Chat</span>
+                    <select id="langSelect">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="ta">Tamil</option>
+                        <option value="te">Telugu</option>
+                    </select>
+                </div>
+                <div class="chat-body" id="chatBody">
+                    <div class="msg doctor">Hello! How can I assist you today?</div>
+                    <div class="msg user">I have a fever and headache.</div>
+                </div>
+                <div class="chat-footer">
+                    <input type="text" id="chatInput" placeholder="Type your message...">
+                    <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+                    <button><i class="fa-solid fa-microphone"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for general messages -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <p id="modalMessage"></p>
+            <button onclick="document.getElementById('messageModal').style.display='none'">OK</button>
+        </div>
+    </div>
+
+    <!-- Modal for appointment booking -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <h3>Book Your Appointment</h3>
+            <form class="booking-form">
+                <input type="text" id="bookingName" placeholder="Your Name" required>
+                <input type="date" id="bookingDate" required>
+                <button type="submit">Confirm Booking</button>
+            </form>
+            <button onclick="document.getElementById('bookingModal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+
+    <!-- SimplePeer Library -->
+    <script src="https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, addDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Set log level to debug for detailed console output
+        setLogLevel('debug');
+
+        // Global variables for Firebase services
+        let db;
+        let auth;
+        let userId;
+        let peer;
+        let localStream;
+        let chatRef;
+
+        // Message Modal function
+        const showModal = (message) => {
+            const modal = document.getElementById('messageModal');
+            const modalMessage = document.getElementById('modalMessage');
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+        };
+
+        // Initialize Firebase and set up auth state listener
+        async function initializeFirebase() {
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
+
+                if (Object.keys(firebaseConfig).length === 0) {
+                    throw new Error("Firebase config is not provided.");
+                }
+
+                // Initialize Firebase app
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Sign in with custom token or anonymously
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Signed in with custom token.");
+                } else {
+                    await signInAnonymously(auth);
+                    console.log("Signed in anonymously.");
+                }
+
+                // Listen for auth state changes
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        document.getElementById("userIdDisplay").textContent = userId;
+                        console.log("User signed in:", userId);
+                    } else {
+                        userId = null;
+                        console.log("No user is signed in.");
+                        showModal("You are not authenticated. Please log in.");
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                showModal("Failed to initialize the app. Please check the console for details.");
+            }
+        }
+        initializeFirebase();
+
+        // Chat functionality
+        const chatBody = document.getElementById("chatBody");
+        const chatInput = document.getElementById("chatInput");
+        const sendBtn = document.getElementById("sendBtn");
+        const langSelect = document.getElementById("langSelect");
+
+        // Function to call Gemini API for translation
+        const translateText = async (text, targetLang) => {
+            const systemPrompt = `Translate the following text to ${targetLang}. Only return the translated text.`;
+            const userQuery = text;
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const translatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                return translatedText || text; // Fallback to original text if translation fails
+            } catch (error) {
+                console.error("Translation failed:", error);
+                return text; // Return original text on error
+            }
+        };
+
+        // Function to display messages in the chat UI
+        const displayMessage = (message, sender) => {
+            const msgDiv = document.createElement("div");
+            msgDiv.classList.add("msg", sender);
+            msgDiv.textContent = message;
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        };
+
+        // Listen for new chat messages from Firestore
+        const listenForMessages = (callId) => {
+            chatRef = collection(db, `artifacts/${__app_id}/public/chats/${callId}/messages`);
+            onSnapshot(chatRef, (snapshot) => {
+                snapshot.docChanges().forEach(async (change) => {
+                    if (change.type === "added") {
+                        const messageData = change.doc.data();
+                        displayMessage(messageData.text, messageData.sender);
+                    }
+                });
+            }, (error) => {
+                console.error("Error listening to chat:", error);
+            });
+        };
+
+        sendBtn.addEventListener("click", async () => {
+            const msg = chatInput.value.trim();
+            const lang = langSelect.value;
+            if (!msg || !userId || !chatRef) {
+                showModal("Please start a call first and ensure you are authenticated.");
+                return;
+            }
+
+            // Add user message to Firestore
+            await addDoc(chatRef, {
+                text: msg,
+                sender: 'user',
+                timestamp: Date.now(),
+                language: 'en'
+            });
+            chatInput.value = "";
+
+            // Simulate doctor's reply
+            const doctorMsg = "Please take rest and stay hydrated.";
+            const translatedDoctorMsg = await translateText(doctorMsg, lang);
+
+            // Add doctor's message to Firestore
+            setTimeout(async () => {
+                await addDoc(chatRef, {
+                    text: translatedDoctorMsg,
+                    sender: 'doctor',
+                    timestamp: Date.now(),
+                    language: lang
+                });
+            }, 1000);
+        });
+
+        // WebRTC and Firestore Signaling Logic
+        const localVideo = document.getElementById('local-video');
+        const remoteVideo = document.getElementById('remote-video');
+        const createCallBtn = document.getElementById('createCallBtn');
+        const joinCallBtn = document.getElementById('joinCallBtn');
+        const hangupBtn = document.getElementById('hangupBtn');
+        const callIdInput = document.getElementById('callIdInput');
+        
+        const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+        const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+
+        // Function to get local media stream and request permissions
+        async function getLocalStream() {
+            // This is where the browser prompts for camera and microphone permissions.
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localVideo.srcObject = localStream;
+                localVideo.style.display = 'block';
+            } catch (e) {
+                console.error("Error getting local media:", e);
+                showModal("Unable to access camera and microphone. Please grant permissions and try again.");
+            }
+        }
+
+        // Toggle audio track
+        toggleAudioBtn.addEventListener('click', () => {
+            if (localStream) {
+                const audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    toggleAudioBtn.classList.toggle('muted');
+                    toggleAudioBtn.querySelector('i').className = audioTrack.enabled ? 'fa-solid fa-microphone' : 'fa-solid fa-microphone-slash';
+                }
+            }
+        });
+
+        // Toggle video track
+        toggleVideoBtn.addEventListener('click', () => {
+            if (localStream) {
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    toggleVideoBtn.classList.toggle('muted');
+                    toggleVideoBtn.querySelector('i').className = videoTrack.enabled ? 'fa-solid fa-video' : 'fa-solid fa-video-slash';
+                }
+            }
+        });
+
+        // Create a new call
+        createCallBtn.addEventListener('click', async () => {
+            await getLocalStream();
+            const callDoc = doc(db, `artifacts/${__app_id}/public/calls`, crypto.randomUUID());
+            const callId = callDoc.id;
+            callIdInput.value = callId;
+
+            // Start listening for chat messages for this call
+            listenForMessages(callId);
+            
+            // Show hangup button
+            hangupBtn.style.display = 'inline-block';
+
+            peer = new SimplePeer({
+                initiator: true,
+                stream: localStream,
+                trickle: false
+            });
+
+            // Handle signaling from this peer
+            peer.on('signal', async data => {
+                if (data.type === 'offer') {
+                    await setDoc(callDoc, { offer: JSON.stringify(data) });
+                    console.log("Offer set in Firestore:", callId);
+                    showModal(`Call created with ID: ${callId}. Share this ID to connect.`);
+                } else if (data.candidate) {
+                    await addDoc(collection(callDoc, 'offerCandidates'), { candidate: JSON.stringify(data.candidate) });
+                    console.log("Added offer candidate.");
+                }
+            });
+
+            // Listen for the remote stream
+            peer.on('stream', stream => {
+                remoteVideo.srcObject = stream;
+                remoteVideo.style.display = 'block';
+                showModal("Call connected!");
+            });
+
+            // Listen for the answer and remote ICE candidates
+            onSnapshot(callDoc, async (snapshot) => {
+                const data = snapshot.data();
+                if (data && data.answer && !peer.connected) {
+                    await peer.signal(JSON.parse(data.answer));
+                    console.log("Answer received and signaled.");
+                }
+            });
+
+            onSnapshot(collection(callDoc, 'answerCandidates'), (snapshot) => {
+                snapshot.docChanges().forEach(async change => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        await peer.signal({ candidate: JSON.parse(data.candidate) });
+                        console.log("Added answer candidate.");
+                    }
+                });
+            });
+        });
+
+        // Join an existing call
+        joinCallBtn.addEventListener('click', async () => {
+            const callId = callIdInput.value;
+            if (!callId) {
+                showModal("Please enter a Call ID to join.");
+                return;
+            }
+
+            await getLocalStream();
+            const callDocRef = doc(db, `artifacts/${__app_id}/public/calls`, callId);
+            const callDocSnap = await getDoc(callDocRef);
+
+            if (!callDocSnap.exists()) {
+                showModal("Call ID does not exist.");
+                return;
+            }
+            
+            // Start listening for chat messages for this call
+            listenForMessages(callId);
+
+            // Show hangup button
+            hangupBtn.style.display = 'inline-block';
+
+            peer = new SimplePeer({
+                initiator: false,
+                stream: localStream
+            });
+
+            // Listen for offer and signal it
+            onSnapshot(callDocRef, async (snapshot) => {
+                const data = snapshot.data();
+                if (data && data.offer && !peer.connected) {
+                    await peer.signal(JSON.parse(data.offer));
+                    console.log("Offer received and signaled.");
+                }
+            });
+            
+            // Listen for the remote stream
+            peer.on('stream', stream => {
+                remoteVideo.srcObject = stream;
+                remoteVideo.style.display = 'block';
+                showModal("Call connected!");
+            });
+
+            // Handle signaling from this peer
+            peer.on('signal', async data => {
+                if (data.type === 'answer') {
+                    await updateDoc(callDocRef, { answer: JSON.stringify(data) });
+                    console.log("Answer set in Firestore.");
+                } else if (data.candidate) {
+                    await addDoc(collection(callDocRef, 'answerCandidates'), { candidate: JSON.stringify(data.candidate) });
+                    console.log("Added answer candidate.");
+                }
+            });
+
+            // Listen for offer candidates
+            onSnapshot(collection(callDocRef, 'offerCandidates'), (snapshot) => {
+                snapshot.docChanges().forEach(async change => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        await peer.signal({ candidate: JSON.parse(data.candidate) });
+                        console.log("Added offer candidate.");
+                    }
+                });
+            });
+        });
+
+        // Hang up the call
+        hangupBtn.addEventListener('click', () => {
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            localVideo.srcObject = null;
+            localVideo.style.display = 'none';
+            remoteVideo.srcObject = null;
+            remoteVideo.style.display = 'none';
+            hangupBtn.style.display = 'none';
+            showModal("Call ended.");
+        });
+
+        // Booking modal functionality
+        document.querySelectorAll('.book-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.getElementById('bookingModal').style.display = 'flex';
+            });
+        });
+
+        document.querySelector('.booking-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('bookingName').value;
+            const date = document.getElementById('bookingDate').value;
+            showModal(`Booking confirmed for ${name} on ${date}.`);
+            document.getElementById('bookingModal').style.display = 'none';
+        });
+
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+                    .then(reg => console.log('Service Worker Registered successfully:', reg.scope))
+                    .catch(err => console.log('Service Worker Registration Failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

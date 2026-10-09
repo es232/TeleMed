@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="manifest" href="manifest.json">
+    <title>Symptom Checker — TeleMed Nabha</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root{
+            --dark: #461220; --deep: #8C2F39; --second: #B23A48; --light: #FCB9B2; --soft: #FED0BB;
+            --muted: #6b5a59; --glass: rgba(255,255,255,0.9); --shadow: 0 8px 32px rgba(70,18,32,0.08);
+            --hover-shadow: 0 12px 40px rgba(70,18,32,0.12); --border: rgba(70,18,32,0.08);
+        }
+        *{box-sizing:border-box;font-family:"Poppins",sans-serif} body{margin:0;background:linear-gradient(135deg,var(--soft) 0%,#fff 100%);color:var(--dark);line-height:1.6;min-height:100vh}
+        
+        /* Navbar */
+        .navbar {
+            background: var(--dark);
+            color: var(--light);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            white-space: nowrap;
+        }
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 24px;
+            margin: 0;
+            padding: 0;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+        .navbar ul li {
+            display: flex;
+            align-items: center;
+        }
+        .navbar ul li a {
+            color: var(--light);
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .navbar ul li a:hover,
+        .navbar ul li a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--soft);
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            white-space: nowrap;
+        }
+
+        /* Layout */
+        .container{max-width:1400px;margin:32px auto;padding:0 24px;display:grid;grid-template-columns:1fr 380px;gap:32px}
+        .main-panel{background:var(--glass);backdrop-filter:blur(10px);border-radius:20px;padding:32px;box-shadow:var(--shadow);border:1px solid var(--border)}
+        .side-panel{display:flex;flex-direction:column;gap:24px}
+
+        /* Header */
+        .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+        .header-content{display:flex;align-items:center;gap:16px}
+        .icon-wrapper{width:56px;height:56px;background:linear-gradient(135deg,var(--light),var(--soft));border-radius:16px;display:flex;align-items:center;justify-content:center}
+        .icon-wrapper i{font-size:24px;color:var(--dark)}
+        .header h1{font-size:2rem;margin:0;font-weight:700;background:linear-gradient(135deg,var(--dark),var(--deep));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .header p{color:var(--muted);margin:4px 0 0 0;font-size:1rem}
+        .badge{background:linear-gradient(135deg,var(--deep),var(--second));color:white;padding:8px 16px;border-radius:25px;font-weight:600;font-size:0.9rem}
+
+        /* Form Section */
+        .form-section{margin-bottom:32px}
+        .section-title{font-size:1.25rem;font-weight:600;color:var(--dark);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+        .section-title i{color:var(--deep)}
+        
+        /* Symptoms Grid */
+        .symptoms-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+        .symptom-card{background:linear-gradient(135deg,#fff,var(--light));border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden}
+        .symptom-card:hover{transform:translateY(-4px);box-shadow:var(--hover-shadow)}
+        .symptom-card.selected{border-color:var(--deep);box-shadow:0 0 0 2px rgba(140,47,57,0.2)}
+        .symptom-card input{position:absolute;opacity:0}
+        .symptom-card label{display:flex;align-items:center;gap:12px;cursor:pointer;font-weight:500}
+        .symptom-card .check-icon{width:20px;height:20px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+        .symptom-card.selected .check-icon{background:var(--deep);border-color:var(--deep);color:white}
+
+        /* Custom Input */
+        .custom-input{display:flex;gap:12px;margin-bottom:20px}
+        .custom-input input{flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:12px;background:#fff;font-size:1rem}
+        .custom-input input:focus{outline:none;border-color:var(--deep);box-shadow:0 0 0 3px rgba(140,47,57,0.1)}
+
+        /* Buttons */
+        .btn{padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.2s;border:none;font-size:1rem;display:inline-flex;align-items:center;gap:8px}
+        .btn-primary{background:linear-gradient(135deg,var(--deep),var(--second));color:white;box-shadow:0 4px 16px rgba(140,47,57,0.3)}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(140,47,57,0.4)}
+        .btn-secondary{background:transparent;border:1px solid var(--deep);color:var(--deep)}
+        .btn-secondary:hover{background:var(--deep);color:white}
+        .btn-ghost{background:rgba(140,47,57,0.05);color:var(--deep);border:1px dashed var(--border)}
+        .controls{display:flex;gap:12px;flex-wrap:wrap}
+
+        /* Results */
+        .results{margin-top:32px}
+        .result-card{background:#fff;border-radius:16px;padding:24px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:24px}
+        .result-header{display:flex;align-items:center;justify-content:between;margin-bottom:20px;flex-wrap:wrap;gap:16px}
+        .conditions{display:flex;gap:12px;flex-wrap:wrap;flex:1}
+        .condition-tag{background:linear-gradient(135deg,var(--light),#fff);padding:12px 16px;border-radius:12px;border:1px solid var(--border)}
+        .condition-name{font-weight:600;margin-bottom:4px} .confidence{color:var(--deep);font-size:0.9rem}
+        .risk-badge{padding:8px 16px;border-radius:25px;font-weight:600;color:white;font-size:0.9rem}
+        .risk-high{background:linear-gradient(135deg,var(--dark),#000)} .risk-medium{background:linear-gradient(135deg,var(--deep),var(--second))} .risk-low{background:linear-gradient(135deg,#2d5a3d,#4caf50)}
+
+        .result-body{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}
+        .advice-section{background:linear-gradient(135deg,#fff,var(--soft));padding:20px;border-radius:12px}
+        .specialist-section{background:#fff;padding:20px;border-radius:12px;border:1px solid var(--border)}
+        .section-header{font-weight:600;margin-bottom:12px;color:var(--dark);display:flex;align-items:center;gap:8px}
+        .advice-list{list-style:none;padding:0;margin:0} .advice-list li{padding:8px 0;border-bottom:1px solid var(--border);margin-bottom:8px}
+        .specialist-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0}
+        .specialist-name{font-weight:500} .consult-btn{background:var(--second);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:0.85rem;cursor:pointer}
+        
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: stretch;
+        }
+        .side-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .side-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .history-item {
+            background: linear-gradient(135deg, #fff, var(--light));
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--deep);
+            display: flex;
+            flex-direction: column;
+        }
+        /* Modal */
+        .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+        .modal{background:#fff;border-radius:16px;padding:24px;width:90%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:1px solid var(--border)}
+        .modal h3{margin:0 0 16px 0;font-size:1.5rem;color:var(--dark)} .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer}
+        .form-group{margin-bottom:16px} .form-group label{display:block;margin-bottom:8px;font-weight:500;color:var(--dark)}
+        .form-group select,.form-group input{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:1rem}
+        .modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:24px}
+
+        /* Loading */
+        .loading{display:flex;align-items:center;gap:16px;padding:24px;background:linear-gradient(135deg,#fff,var(--soft));border-radius:12px}
+        .spinner{width:40px;height:40px;border:3px solid var(--border);border-top:3px solid var(--deep);border-radius:50%;animation:spin 1s linear infinite}
+        @keyframes spin{0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)}}
+
+        /* Responsive */
+        @media(max-width:1200px){.container{grid-template-columns:1fr;gap:24px} .result-body{grid-template-columns:1fr}}
+        @media(max-width:768px){.container{padding:0 16px;margin:16px auto} .symptoms-grid{grid-template-columns:1fr} .controls{flex-direction:column} .navbar{padding:12px 16px} .main-panel{padding:20px}}
+
+        .empty-state{text-align:center;padding:40px;color:var(--muted)} .urgent-alert{background:linear-gradient(135deg,var(--light),#fff);padding:16px;border-radius:12px;border-left:4px solid var(--dark);margin-top:16px}
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><i class="fa-solid fa-hospital"></i>TeleMed Nabha</div>
+        <ul>
+            <li><a href="home.html">Home</a></li>
+            <li><a class="active" href="symptom-checker.html">Symptom Checker</a></li>
+            <li><a href="pharmacy.html">Pharmacy</a></li>
+            <li><a href="consultation.html">Consultation</a></li>
+            <li><a href="sos.html">SOS</a></li>
+            <li><a href="health-tracker.html">Health Tracker</a></li>
+        </ul>
+        <div class="nav-right">
+            <span id="username">Hello, User!</span>
+            
+        </div>
+    </nav>
+
+    <div class="container">
+        <main class="main-panel">
+            <div class="header">
+                <div class="header-content">
+                    <div class="icon-wrapper"><i class="fa-solid fa-stethoscope"></i></div>
+                    <div>
+                        <h1>AI Symptom Checker</h1>
+                        <p>Describe your symptoms and get instant AI-powered health insights and recommendations</p>
+                    </div>
+                </div>
+                <div class="badge">Demo Mode</div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-clipboard-list"></i>Select Your Symptoms</div>
+                <div class="symptoms-grid" id="symptomsGrid"></div>
+                
+                <div class="custom-input">
+                    <input id="customSymptom" type="text" placeholder="Describe any other symptoms you're experiencing...">
+                    <button class="btn btn-secondary" id="addCustom">Add</button>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" id="analyzeBtn"><i class="fa-solid fa-brain"></i>Analyze Symptoms</button>
+                    <button class="btn btn-secondary" id="clearBtn"><i class="fa-solid fa-refresh"></i>Clear All</button>
+                    <button class="btn btn-ghost" id="historyBtn"><i class="fa-solid fa-history"></i>View History</button>
+                </div>
+            </div>
+
+            <div class="results" id="results"></div>
+        </main>
+
+        <aside class="side-panel">
+            <div class="side-card">
+                <div class="side-card-header">
+                    <div>
+                        <div style="color:var(--muted);font-size:0.9rem">Logged in as</div>
+                        <div id="profileName" style="font-weight:600">Guest</div>
+                    </div>
+                    <div style="text-align:right;font-size:0.8rem;color:var(--muted)" id="lastChecked">Last check: --</div>
+                </div>
+            </div>
+
+            <div class="side-card">
+                <div class="side-card-header">
+                    <h3>Recent History</h3>
+                    <span style="font-size:0.8rem;color:var(--muted)">Past checks</span>
+                </div>
+                <div class="history-list" id="historyList"></div>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-ghost" style="flex:1;font-size:0.85rem" id="clearHistoryBtn">Clear</button>
+                    <button class="btn btn-ghost" style="flex:1;font-size:0.85rem" id="exportBtn">Export</button>
+                </div>
+            </div>
+
+            <div class="side-card">
+                <h3>Quick Health Tips</h3>
+                <ul class="tips-list">
+                    <li>Stay hydrated with 8-10 glasses of water daily</li>
+                    <li>Rest is essential for recovery from any illness</li>
+                    <li>Use natural remedies like ginger tea for mild symptoms</li>
+                    <li>Seek immediate help for severe chest pain or breathing issues</li>
+                </ul>
+            </div>
+
+            <div class="side-card">
+                <h3>Emergency Support</h3>
+                <div style="color:var(--muted);font-size:0.9rem;line-height:1.5">SOS feature works offline through local volunteer network. Your safety is our priority.</div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Modal for scheduling appointment -->
+    <div class="modal-backdrop" id="modalBackdrop">
+        <div class="modal" style="position:relative">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3>Schedule Consultation</h3>
+            <p style="color:var(--muted);margin-bottom:24px">Connect with a healthcare professional based on your symptoms</p>
+            
+            <div class="form-group">
+                <label>Specialization</label>
+                <select id="docSpec">
+                    <option value="General Physician">General Physician</option>
+                    <option value="Cardiologist">Cardiologist</option>
+                    <option value="Neurologist">Neurologist</option>
+                    <option value="Gastroenterologist">Gastroenterologist</option>
+                    <option value="Dermatologist">Dermatologist</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Preferred Date & Time</label>
+                <input id="appointDate" type="datetime-local">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" id="confirmAppt">Confirm Appointment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for generic messages -->
+    <div class="modal-backdrop" id="messageModalBackdrop">
+        <div class="modal">
+            <h3 id="messageTitle"></h3>
+            <p id="messageBody" style="color:var(--muted);margin-bottom:24px"></p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="messageConfirm">OK</button>
+                <button class="btn btn-ghost" id="messageCancel" style="display:none;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            // General data mapping symptoms to conditions and specialists
+            const SYMPTOMS = [
+                {id:'fever', label:'Fever / High Temperature'}, {id:'cough', label:'Cough (Dry or Wet)'}, {id:'sore_throat', label:'Sore Throat'},
+                {id:'headache', label:'Headache / Migraine'}, {id:'breath', label:'Shortness of Breath'}, {id:'nausea', label:'Nausea / Vomiting'},
+                {id:'diarrhea', label:'Diarrhea'}, {id:'fatigue', label:'Fatigue / Weakness'}, {id:'chest_pain', label:'Chest Pain'},
+                {id:'loss_smell', label:'Loss of Smell/Taste'}, {id:'skin_rash', label:'Skin Rash'}, {id:'body_pain', label:'Body / Muscle Pain'}
+            ];
+
+            const CONDITIONS = [
+                {key:'viral_respiratory', name:'Viral Respiratory Infection', typical:['fever','cough','sore_throat','fatigue'], specialist:'General Physician', advice:['Isolate and rest','Stay hydrated','Monitor symptoms']},
+                {key:'gastroenteritis', name:'Gastroenteritis', typical:['nausea','diarrhea','fatigue'], specialist:'Gastroenterologist', advice:['Oral rehydration','Light diet','Rest']},
+                {key:'cardiac', name:'Cardiac Event (Urgent)', typical:['chest_pain','breath','fatigue'], specialist:'Cardiologist', advice:['Seek immediate help','Avoid exertion','Call emergency']},
+                {key:'migraine', name:'Migraine/Headache', typical:['headache','nausea'], specialist:'Neurologist', advice:['Rest in dark room','Avoid triggers']},
+                {key:'dermatitis', name:'Skin Condition', typical:['skin_rash'], specialist:'Dermatologist', advice:['Avoid irritants','Keep area clean and dry']}
+            ];
+
+            const username = localStorage.getItem('user') || 'Guest';
+            document.getElementById('username').innerText = `Hello, ${username}!`;
+            document.getElementById('profileName').innerText = username;
+
+            // Helper function for custom modals
+            const showMessage = (title, body, confirmCallback, isConfirm = false) => {
+                const modal = document.getElementById('messageModalBackdrop');
+                const titleEl = document.getElementById('messageTitle');
+                const bodyEl = document.getElementById('messageBody');
+                const confirmBtn = document.getElementById('messageConfirm');
+                const cancelBtn = document.getElementById('messageCancel');
+
+                titleEl.textContent = title;
+                bodyEl.textContent = body;
+                confirmBtn.onclick = () => {
+                    modal.style.display = 'none';
+                    if (confirmCallback) confirmCallback(true);
+                };
+                cancelBtn.onclick = () => {
+                    modal.style.display = 'none';
+                    if (confirmCallback) confirmCallback(false);
+                };
+
+                if (isConfirm) {
+                    cancelBtn.style.display = 'inline-flex';
+                } else {
+                    cancelBtn.style.display = 'none';
+                }
+
+                modal.style.display = 'flex';
+            };
+
+            // Initialize symptoms grid
+            const grid = document.getElementById('symptomsGrid');
+            SYMPTOMS.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'symptom-card';
+                card.innerHTML = `
+                    <input type="checkbox" id="${s.id}" data-key="${s.id}">
+                    <label for="${s.id}">
+                        <div class="check-icon"><i class="fa-solid fa-check" style="font-size:12px"></i></div>
+                        <span>${s.label}</span>
+                    </label>`;
+                card.addEventListener('click', () => {
+                    const input = card.querySelector('input');
+                    input.checked = !input.checked;
+                    card.classList.toggle('selected', input.checked);
+                });
+                grid.appendChild(card);
+            });
+
+            // History management
+            const HISTORY_KEY = 'telemed_history';
+            const getHistory = () => { try{ return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch{ return []; }};
+            const saveHistory = (h) => localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+            const addToHistory = (entry) => {
+                const h = getHistory(); h.unshift(entry);
+                if(h.length > 20) h.splice(20); saveHistory(h); renderHistory();
+            };
+
+            const renderHistory = () => {
+                const list = document.getElementById('historyList');
+                const history = getHistory();
+                list.innerHTML = history.length ? history.map((h,i) => `
+                    <div class="history-item" onclick="reopenHistory(${i})">
+                        <div style="font-weight:500">${h.summary}</div>
+                        <div class="history-meta">${new Date(h.time).toLocaleString()} • ${h.risk}</div>
+                    </div>`).join('') : '<div class="empty-state">No previous checks</div>';
+                
+                document.getElementById('lastChecked').innerText = history.length ? 
+                    `Last: ${new Date(history[0].time).toLocaleDateString()}` : 'Last check: --';
+            };
+
+            window.reopenHistory = (idx) => {
+                const history = getHistory(); if(!history[idx]) return;
+                renderResults(history[idx], true);
+            };
+
+            // Add custom symptom
+            document.getElementById('addCustom').addEventListener('click', () => {
+                const input = document.getElementById('customSymptom');
+                if(!input.value.trim()) {
+                    showMessage('Error', 'Please enter a symptom to add.');
+                    return;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'symptom-card selected';
+                card.innerHTML = `
+                    <input type="checkbox" checked data-key="${input.value}">
+                    <label><div class="check-icon"><i class="fa-solid fa-check" style="font-size:12px"></i></div>
+                    <span>${input.value} <em>(Custom)</em></span></label>`;
+                grid.appendChild(card);
+                input.value = '';
+            });
+
+            // Analyze symptoms
+            document.getElementById('analyzeBtn').addEventListener('click', () => {
+                const selected = [...document.querySelectorAll('#symptomsGrid input:checked')].map(i => i.dataset.key);
+                if(!selected.length) {
+                    showMessage('Missing Symptoms', 'Please select at least one symptom to analyze.');
+                    return;
+                }
+
+                showLoading();
+                setTimeout(() => {
+                    const analysis = analyzeSymptoms(selected);
+                    const entry = {
+                        time: Date.now(), symptoms: selected, analysis,
+                        summary: analysis.conditions.slice(0,2).map(c => c.name).join(', '),
+                        risk: analysis.risk.toUpperCase()
+                    };
+                    addToHistory(entry);
+                    renderResults(entry);
+                }, 1200);
+            });
+
+            const showLoading = () => {
+                document.getElementById('results').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div><div style="font-weight:600">Analyzing symptoms...</div>
+                        <div style="color:var(--muted);font-size:0.9rem">AI processing your health data</div></div>
+                    </div>`;
+            };
+
+            const analyzeSymptoms = (symptoms) => {
+                const scores = CONDITIONS.map(c => {
+                    const overlap = c.typical.reduce((s,t) => s + (symptoms.includes(t) ? 1 : 0), 0);
+                    const score = overlap * 2 + Math.random() * 0.8;
+                    return {condition: c, score};
+                }).sort((a,b) => b.score - a.score);
+
+                const conditions = scores.slice(0,3).map((s,i) => ({
+                    ...s.condition, confidence: Math.min(95, Math.round(75 - i*15 + Math.random()*10))
+                }));
+
+                const risk = symptoms.includes('chest_pain') || symptoms.includes('breath') ? 'high' :
+                             symptoms.length >= 3 || symptoms.includes('fever') ? 'medium' : 'low';
+
+                // Find the specialist for the top-ranked condition
+                const recommendedSpecialist = conditions.length > 0 ? conditions[0].specialist : 'General Physician';
+                
+                return {conditions, risk, specialist: recommendedSpecialist, consultation: risk === 'high' ? 'Emergency' : risk === 'medium' ? 'Video' : 'Chat'};
+            };
+
+            const renderResults = (entry, isHistory = false) => {
+                const {analysis} = entry;
+                const results = document.getElementById('results');
+                
+                results.innerHTML = `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div class="conditions">
+                                ${analysis.conditions.map(c => `
+                                    <div class="condition-tag">
+                                        <div class="condition-name">${c.name}</div>
+                                        <div class="confidence">${c.confidence}% confidence</div>
+                                    </div>`).join('')}
+                            </div>
+                            <div class="risk-badge risk-${analysis.risk}">${analysis.risk.toUpperCase()} RISK</div>
+                        </div>
+                        
+                        <div class="result-body">
+                            <div class="advice-section">
+                                <div class="section-header"><i class="fa-solid fa-lightbulb"></i>Recommendations</div>
+                                <ul class="advice-list">
+                                    ${analysis.conditions[0].advice.map(a => `<li>${a}</li>`).join('')}
+                                </ul>
+                                <div style="margin-top:16px">
+                                    <div style="font-weight:500;margin-bottom:8px">Recommended: ${analysis.consultation} Consultation</div>
+                                    <button class="btn btn-primary" onclick="openSchedule('${analysis.specialist}')">Schedule Now</button>
+                                </div>
+                            </div>
+                            
+                            <div class="specialist-section">
+                                <div class="section-header"><i class="fa-solid fa-user-doctor"></i>Specialist Recommendation</div>
+                                <div class="specialist-item">
+                                    <div class="specialist-name">${analysis.specialist}</div>
+                                    <button class="consult-btn" onclick="openSchedule('${analysis.specialist}')">Consult</button>
+                                </div>
+                                <div style="font-size:0.9rem; color:var(--muted); margin-top: 12px">
+                                    Based on your symptoms, we recommend consulting a specialist in this field.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${analysis.risk === 'high' ? `
+                            <div class="urgent-alert">
+                                <div style="font-weight:600;color:var(--dark);margin-bottom:8px">⚠️ High Risk Detected</div>
+                                <div style="color:var(--muted);margin-bottom:12px">Immediate medical attention recommended</div>
+                                <button class="btn btn-primary" style="background:var(--dark)" onclick="triggerSOS()">Activate SOS</button>
+                            </div>` : ''}
+                    </div>`;
+                
+                results.scrollIntoView({behavior: 'smooth'});
+            };
+
+            // Utility functions
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                document.querySelectorAll('#symptomsGrid input').forEach(i => {
+                    i.checked = false;
+                    i.closest('.symptom-card').classList.remove('selected');
+                });
+                document.querySelectorAll('.symptom-card[data-custom]').forEach(c => c.remove());
+                document.getElementById('results').innerHTML = '';
+            });
+
+            document.getElementById('historyBtn').addEventListener('click', () => {
+                document.querySelector('.side-panel').scrollIntoView({behavior: 'smooth'});
+            });
+
+            document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+                showMessage('Clear History', 'Are you sure you want to clear all your health history?', (result) => {
+                    if (result) {
+                        localStorage.removeItem(HISTORY_KEY);
+                        renderHistory();
+                    }
+                }, true);
+            });
+
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                const data = getHistory();
+                if(!data.length) {
+                    showMessage('No History', 'There is no history to export.');
+                    return;
+                }
+                const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'health_history.json'; a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            // Modal functions
+            window.openSchedule = (specialist) => {
+                const selectEl = document.getElementById('docSpec');
+                selectEl.value = specialist;
+                document.getElementById('modalBackdrop').style.display = 'flex';
+                document.getElementById('appointDate').value = '';
+            };
+
+            window.closeModal = () => {
+                document.getElementById('modalBackdrop').style.display = 'none';
+            };
+
+            document.getElementById('confirmAppt').addEventListener('click', () => {
+                const spec = document.getElementById('docSpec').value;
+                const date = document.getElementById('appointDate').value;
+                if(!date) {
+                    showMessage('Missing Details', 'Please select a preferred date and time for the appointment.');
+                    return;
+                }
+                
+                closeModal();
+                showMessage('Appointment Confirmed', `Appointment scheduled with ${spec} on ${new Date(date).toLocaleString()} (Demo)`);
+            });
+
+            // SOS trigger
+            window.triggerSOS = () => {
+                const message = navigator.onLine ? 
+                    'This will notify emergency services and nearby volunteers.' :
+                    'You are offline. SOS will use your local volunteer network.';
+
+                showMessage('Emergency SOS', `${message} Do you want to continue?`, (result) => {
+                    if (result) {
+                        const hasDoctor = Math.random() < 0.7;
+                        if(hasDoctor) {
+                            showMessage('Emergency Doctor Found', 'Connecting to video call... (Demo)');
+                            setTimeout(() => window.location.href = 'consultation.html', 1000);
+                        } else {
+                            showMessage('No Immediate Doctor', 'No immediate doctor available. Emergency services and volunteers have been notified.');
+                        }
+                    }
+                }, true);
+            };
+
+            // Logout
+            window.logout = () => {
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            };
+
+            // Initialize
+            renderHistory();
+            
+            // Demo seed data
+            if(!getHistory().length) {
+                const demoEntry = {
+                    time: Date.now() - 86400000,
+                    symptoms: ['fever', 'cough'],
+                    analysis: {
+                        conditions: [{name: 'Viral Respiratory Infection', confidence: 78, advice: ['Rest and isolate', 'Stay hydrated'], specialist: 'General Physician'}],
+                        risk: 'medium',
+                        specialist: 'General Physician',
+                        consultation: 'Video'
+                    },
+                    summary: 'Viral Respiratory Infection',
+                    risk: 'MEDIUM'
+                };
+                addToHistory(demoEntry);
+            }
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape') closeModal();
+                if(e.ctrlKey && e.key === 'Enter') document.getElementById('analyzeBtn').click();
+            });
+
+            console.log('TeleMed Nabha Symptom Checker loaded successfully');
+        })();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+                    .then(reg => console.log('Service Worker Registered successfully:', reg.scope))
+                    .catch(err => console.log('Service Worker Registration Failed:', err));
+            });
+        }
+    </script>
+
+</body>
+</html>

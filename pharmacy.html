@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <title>Pharmacy & Medicine Network - Telemedicine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #461220;
+            --secondary-color: #8C2F39;
+            --accent-color: #B23A48;
+            --background-color: #FED0BB;
+            --card-bg-color: #fff;
+            --cart-bg-color: #fff5f5;
+            --safe-color: #4CAF50;
+            --soon-color: #FFC107;
+            --expired-color: #F44336;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background: var(--background-color);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== Navbar ===== */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        nav {
+            display: flex;
+            gap: 1.2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        
+        nav a:hover, nav a.active {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .pharmacy-container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            width: 95%;
+        }
+
+        .pharmacy-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .pharmacy-header h1 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+        }
+
+        /* ===== Search Bar ===== */
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            max-width: 500px;
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .search-bar input:focus {
+            border-color: var(--accent-color);
+        }
+
+        /* ===== Medicine Grid ===== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .medicine-card {
+            background: var(--card-bg-color);
+            border-radius: 15px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        
+        .medicine-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .medicine-card img {
+            max-width: 100px;
+            margin-bottom: 1rem;
+        }
+        
+        .medicine-card h3 {
+            color: var(--primary-color);
+            margin: 0.5rem 0;
+        }
+        
+        .stock-status {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .in-stock {
+            background-color: #d4edda;
+            color: var(--safe-color);
+        }
+        
+        .low-stock {
+            background-color: #fff3cd;
+            color: var(--soon-color);
+        }
+        
+        .out-of-stock {
+            background-color: #f8d7da;
+            color: var(--expired-color);
+        }
+        
+        .price {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .add-btn {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: none;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        
+        .add-btn:hover {
+            background: var(--secondary-color);
+        }
+        
+        .add-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* ===== Cart ===== */
+        .cart-section {
+            margin-top: 3rem;
+            background: var(--cart-bg-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .cart-section h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .cart-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cart-item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+        }
+
+        .cart-item-price {
+            font-size: 0.9em;
+            color: #777;
+        }
+        
+        .cart-item-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .cart-item-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--accent-color);
+            font-size: 1rem;
+            transition: color 0.3s;
+            padding: 0.2rem 0.4rem;
+        }
+        
+        .cart-item-actions button:hover {
+            color: var(--primary-color);
+        }
+
+        .cart-total {
+            text-align: right;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .checkout-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        /* ===== Stock with Expiry ===== */
+        .stock-section { margin-top: 3rem; }
+        .stock-section h2 { color: var(--secondary-color); }
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        .shelf {
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .safe { background: var(--safe-color); }
+        .soon { background: var(--soon-color); color: black; }
+        .expired { background: var(--expired-color); }
+
+        /* ===== Prescription Upload and Suggestion ===== */
+        .upload {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: var(--card-bg-color);
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .upload h3 { color: var(--secondary-color); margin-bottom: 1rem; }
+        .upload input[type="file"] {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .upload button {
+            margin-top: 1rem;
+            padding: 0.7rem 1.2rem;
+            border: none;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .upload button:hover { background: var(--secondary-color); }
+        .suggestion {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #fff8f0;
+            border-left: 5px solid var(--soon-color);
+            border-radius: 10px;
+            display: none; /* Hidden by default */
+        }
+        .suggestion h4 { margin: 0; color: var(--secondary-color); }
+
+        /* ===== Admin Panel ===== */
+        .admin-panel {
+            margin-top: 3rem;
+            background: #eee;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .admin-panel-toggle {
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            color: var(--secondary-color);
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .admin-panel-toggle:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .admin-form {
+            display: none; /* Hidden by default */
+            margin-top: 1rem;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .admin-form input, .admin-form button {
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .admin-form button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .admin-form button:hover {
+            background: var(--secondary-color);
+        }
+
+        /* ===== Modals ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            animation: fadeIn 0.3s;
+        }
+        .modal-content h3 { margin-bottom: 1rem; }
+        .modal-content p { color: #555; }
+        .modal-content button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .modal-content button:hover { background: var(--secondary-color); }
+        .medicine-details {
+            text-align: left;
+        }
+        .medicine-details img {
+            display: block;
+            margin: 0 auto 1rem;
+        }
+        .medicine-details h3 {
+            text-align: center;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== Navbar ===== -->
+    <header>
+        <h2><i class="fa-solid fa-notes-medical"></i> Telemedicine</h2>
+        <nav>
+            <a href="home.html"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="symptom-checker.html"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+            <a href="pharmacy.html" class="active"><i class="fa-solid fa-pills"></i> Pharmacy</a>
+            <a href="consultation.html"><i class="fa-solid fa-user-doctor"></i> Consultation</a>
+            <a href="sos.html"><i class="fa-solid fa-triangle-exclamation"></i> SOS</a>
+            <a href="health-tracker.html"><i class="fa-solid fa-heart-pulse"></i> Health Tracker</a>
+        </nav>
+    </header>
+
+    <!-- ===== Pharmacy Section ===== -->
+    <div class="pharmacy-container">
+        <div class="pharmacy-header">
+            <h1>💊 Pharmacy & Medicine Network</h1>
+            <p>Order medicines, upload prescriptions, check real-time stock & get smart suggestions</p>
+        </div>
+
+        <!-- Search -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search medicines...">
+        </div>
+
+        <!-- Medicines -->
+        <div id="medicineGrid" class="grid">
+            <!-- Medicine cards will be dynamically inserted here -->
+            <p style="text-align: center; color: #777;">Loading medicines...</p>
+        </div>
+
+        <!-- Cart -->
+        <div class="cart-section">
+            <h3>🛒 Your Cart</h3>
+            <ul id="cartList" class="cart-list">
+                <!-- Cart items will be dynamically inserted here -->
+                <p style="color: #777;">Your cart is empty.</p>
+            </ul>
+            <p class="cart-total">Total: <span id="cartTotal">₹0</span></p>
+            <button class="checkout-btn">Checkout</button>
+        </div>
+
+        <!-- Live Stock with Expiry -->
+        <div class="stock-section">
+            <h2>📦 Live Stock (with Expiry)</h2>
+            <div id="stockGrid" class="stock-grid">
+                <!-- Stock shelves will be dynamically inserted here -->
+                <p style="text-align: center; color: #777;">Loading stock info...</p>
+            </div>
+        </div>
+
+        <!-- Prescription Upload -->
+        <div class="upload">
+            <h3>📑 Upload Doctor Prescription</h3>
+            <input type="file" id="prescriptionInput" accept=".jpg,.png,.pdf">
+            <br>
+            <button id="uploadBtn"><i class="fa-solid fa-upload"></i> Upload Prescription</button>
+        </div>
+
+        <!-- Alternative Suggestions -->
+        <div id="suggestionBox" class="suggestion">
+            <h4 id="suggestionTitle"></h4>
+            <p id="suggestionText"></p>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="admin-panel">
+            <div class="admin-panel-toggle" id="adminToggle"><i class="fa-solid fa-angle-down"></i> Admin Panel</div>
+            <form class="admin-form" id="adminForm">
+                <h4>Add/Update Medicine</h4>
+                <input type="text" id="medName" placeholder="Medicine Name" required>
+                <input type="number" id="medPrice" placeholder="Price (e.g., 50.00)" step="0.01" required>
+                <input type="number" id="medStock" placeholder="Stock Quantity" required>
+                <input type="date" id="medExpiry" placeholder="Expiry Date" required>
+                <textarea id="medDescription" placeholder="Description"></textarea>
+                <input type="text" id="medAlternatives" placeholder="Alternatives (e.g., Disprin, Clopidogril)">
+                <button type="submit">Submit Medicine</button>
+            </form>
+        </div>
+
+        <!-- Modal for general messages -->
+        <div id="messageModal" class="modal">
+            <div class="modal-content">
+                <p id="modalMessage"></p>
+                <button id="modalCloseBtn">OK</button>
+            </div>
+        </div>
+        
+        <!-- Modal for medicine details -->
+        <div id="detailsModal" class="modal">
+            <div class="modal-content medicine-details">
+                <h3 id="detailsTitle"></h3>
+                <img id="detailsImage" src="" alt="">
+                <p><strong>Price:</strong> <span id="detailsPrice"></span></p>
+                <p><strong>Stock:</strong> <span id="detailsStock"></span></p>
+                <p><strong>Expiry:</strong> <span id="detailsExpiry"></span></p>
+                <p><strong>Description:</strong> <span id="detailsDescription"></span></p>
+                <p><strong>Alternatives:</strong> <span id="detailsAlternatives"></span></p>
+                <button id="detailsCloseBtn">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables for app state
+        const appState = {
+            medicines: [],
+            cart: [],
+            filter: ''
+        };
+
+        // UI elements
+        const medicineGrid = document.getElementById('medicineGrid');
+        const cartList = document.getElementById('cartList');
+        const cartTotalDisplay = document.getElementById('cartTotal');
+        const searchInput = document.getElementById('searchInput');
+        const stockGrid = document.getElementById('stockGrid');
+        const suggestionBox = document.getElementById('suggestionBox');
+        const suggestionTitle = document.getElementById('suggestionTitle');
+        const suggestionText = document.getElementById('suggestionText');
+        const adminToggle = document.getElementById('adminToggle');
+        const adminForm = document.getElementById('adminForm');
+
+        // Modals
+        const messageModal = document.getElementById('messageModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const detailsModal = document.getElementById('detailsModal');
+        const detailsCloseBtn = document.getElementById('detailsCloseBtn');
+
+        // Function to show modal messages
+        const showModal = (message) => {
+            modalMessage.textContent = message;
+            messageModal.style.display = 'flex';
+        };
+
+        modalCloseBtn.addEventListener('click', () => {
+            messageModal.style.display = 'none';
+        });
+
+        detailsCloseBtn.addEventListener('click', () => {
+            detailsModal.style.display = 'none';
+        });
+        
+        // Function to render the medicine cards
+        const renderMedicines = () => {
+            const filteredMedicines = appState.medicines.filter(medicine =>
+                medicine.name.toLowerCase().includes(appState.filter.toLowerCase())
+            );
+
+            medicineGrid.innerHTML = '';
+            if (filteredMedicines.length === 0) {
+                medicineGrid.innerHTML = `<p style="text-align: center; color: #777;">No medicines found matching your search.</p>`;
+                return;
+            }
+
+            filteredMedicines.forEach(medicine => {
+                const card = document.createElement('div');
+                card.classList.add('medicine-card');
+                card.dataset.id = medicine.id;
+
+                const stockStatusClass = medicine.stock > 10 ? 'in-stock' :
+                                         medicine.stock > 0 ? 'low-stock' :
+                                         'out-of-stock';
+                const stockText = medicine.stock > 0 ? `${medicine.stock} in Stock` : 'Out of Stock';
+                const isAvailable = medicine.stock > 0;
+
+                card.innerHTML = `
+                    <img src="${medicine.image || 'https://placehold.co/100x100?text=Pill'}" alt="${medicine.name}">
+                    <h3>${medicine.name}</h3>
+                    <span class="stock-status ${stockStatusClass}">${stockText}</span>
+                    <p class="price">₹${medicine.price.toFixed(2)}</p>
+                    <button class="add-btn" data-id="${medicine.id}" ${!isAvailable ? 'disabled' : ''}>Add to Cart</button>
+                `;
+                medicineGrid.appendChild(card);
+            });
+        };
+
+        // Function to render the cart items
+        const renderCart = () => {
+            cartList.innerHTML = '';
+            let total = 0;
+            if (appState.cart.length === 0) {
+                cartList.innerHTML = `<p style="color: #777;">Your cart is empty.</p>`;
+            } else {
+                appState.cart.forEach(item => {
+                    const cartItem = document.createElement('li');
+                    cartItem.classList.add('cart-item');
+                    cartItem.innerHTML = `
+                        <div class="cart-item-info">
+                            <span class="cart-item-name">${item.name}</span>
+                            <span class="cart-item-price">₹${item.price.toFixed(2)}</span>
+                        </div>
+                        <div class="cart-item-actions">
+                            <button class="quantity-btn" data-action="decrease" data-id="${item.id}">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="quantity-btn" data-action="increase" data-id="${item.id}">+</button>
+                        </div>
+                    `;
+                    cartList.appendChild(cartItem);
+                    total += item.price * item.quantity;
+                });
+            }
+            cartTotalDisplay.textContent = `₹${total.toFixed(2)}`;
+        };
+        
+        // Function to render the live stock shelves
+        const renderStockShelves = () => {
+            stockGrid.innerHTML = '';
+            appState.medicines.forEach(medicine => {
+                const shelf = document.createElement('div');
+                shelf.classList.add('shelf');
+                
+                const today = new Date();
+                const expiry = new Date(medicine.expiryDate);
+                const sixMonthsFromNow = new Date();
+                sixMonthsFromNow.setMonth(today.getMonth() + 6);
+
+                let statusClass = 'safe';
+                let statusText = `Expiry: ${medicine.expiryDate}`;
+                
+                if (expiry < today) {
+                    statusClass = 'expired';
+                    statusText = `Expired: ${medicine.expiryDate}`;
+                } else if (expiry < sixMonthsFromNow) {
+                    statusClass = 'soon';
+                    statusText = `Expiring Soon: ${medicine.expiryDate}`;
+                }
+
+                shelf.classList.add(statusClass);
+                shelf.innerHTML = `${medicine.name}<br><small>${statusText}</small>`;
+                stockGrid.appendChild(shelf);
+            });
+        };
+
+        // Function to render suggestions for out-of-stock items
+        const renderSuggestions = () => {
+            const outOfStockItems = appState.medicines.filter(m => m.stock === 0 && m.alternatives && m.alternatives.length > 0);
+            if (outOfStockItems.length > 0) {
+                const item = outOfStockItems[0];
+                suggestionTitle.textContent = `💡 Suggestion: ${item.name} is out of stock`;
+                suggestionText.innerHTML = `Alternative(s) available → <b>${item.alternatives.join('</b> or <b>')}</b>`;
+                suggestionBox.style.display = 'block';
+            } else {
+                suggestionBox.style.display = 'none';
+            }
+        };
+
+        // Handle adding a medicine to the cart
+        medicineGrid.addEventListener('click', (e) => {
+            if (e.target.classList.contains('add-btn')) {
+                const medicineId = e.target.dataset.id;
+                const medicineToAdd = appState.medicines.find(m => m.id === medicineId);
+
+                if (!medicineToAdd) {
+                    showModal("Could not add to cart. Please try again.");
+                    return;
+                }
+
+                const cartItem = appState.cart.find(item => item.id === medicineId);
+                let newQuantity = cartItem ? cartItem.quantity + 1 : 1;
+
+                if (newQuantity > medicineToAdd.stock) {
+                    showModal(`Sorry, only ${medicineToAdd.stock} of ${medicineToAdd.name} are available.`);
+                    return;
+                }
+
+                if (cartItem) {
+                    cartItem.quantity = newQuantity;
+                } else {
+                    appState.cart.push({
+                        id: medicineToAdd.id,
+                        name: medicineToAdd.name,
+                        price: medicineToAdd.price,
+                        quantity: newQuantity
+                    });
+                }
+                
+                renderCart();
+                showModal(`${medicineToAdd.name} added to cart.`);
+            } else if (e.target.closest('.medicine-card')) {
+                const medicineId = e.target.closest('.medicine-card').dataset.id;
+                const medicineDetails = appState.medicines.find(m => m.id === medicineId);
+                if (medicineDetails) {
+                    document.getElementById('detailsTitle').textContent = medicineDetails.name;
+                    document.getElementById('detailsImage').src = medicineDetails.image || 'https://placehold.co/100x100?text=Pill';
+                    document.getElementById('detailsPrice').textContent = `₹${medicineDetails.price.toFixed(2)}`;
+                    document.getElementById('detailsStock').textContent = medicineDetails.stock;
+                    document.getElementById('detailsExpiry').textContent = medicineDetails.expiryDate;
+                    document.getElementById('detailsDescription').textContent = medicineDetails.description || 'No description available.';
+                    document.getElementById('detailsAlternatives').textContent = medicineDetails.alternatives ? medicineDetails.alternatives.join(', ') : 'None';
+                    detailsModal.style.display = 'flex';
+                }
+            }
+        });
+
+        // Handle updating quantity or removing an item from the cart
+        cartList.addEventListener('click', (e) => {
+            const btn = e.target.closest('.quantity-btn');
+            if (btn) {
+                const itemId = btn.dataset.id;
+                const action = btn.dataset.action;
+                const cartItem = appState.cart.find(item => item.id === itemId);
+                const medicine = appState.medicines.find(m => m.id === itemId);
+
+                if (!cartItem || !medicine) return;
+
+                if (action === 'increase') {
+                    if (cartItem.quantity < medicine.stock) {
+                        cartItem.quantity++;
+                    } else {
+                        showModal(`Sorry, only ${medicine.stock} of ${medicine.name} are available.`);
+                    }
+                } else if (action === 'decrease') {
+                    cartItem.quantity--;
+                }
+
+                if (cartItem.quantity <= 0) {
+                    appState.cart = appState.cart.filter(item => item.id !== itemId);
+                }
+                
+                renderCart();
+            }
+        });
+
+        // Handle search input
+        searchInput.addEventListener('input', (e) => {
+            appState.filter = e.target.value;
+            renderMedicines();
+        });
+
+        // Handle prescription upload
+        document.getElementById('uploadBtn').addEventListener('click', () => {
+            const fileInput = document.getElementById('prescriptionInput');
+            if (fileInput.files.length > 0) {
+                showModal(`Prescription file "${fileInput.files[0].name}" uploaded successfully! Our team will review it shortly.`);
+            } else {
+                showModal("Please select a file to upload.");
+            }
+        });
+
+        // Toggle admin panel visibility
+        adminToggle.addEventListener('click', () => {
+            const isVisible = adminForm.style.display === 'flex';
+            adminForm.style.display = isVisible ? 'none' : 'flex';
+            adminToggle.innerHTML = isVisible ? '<i class="fa-solid fa-angle-down"></i> Admin Panel' : '<i class="fa-solid fa-angle-up"></i> Admin Panel';
+        });
+
+        // Handle admin form submission
+        adminForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const medName = document.getElementById('medName').value;
+            const medPrice = parseFloat(document.getElementById('medPrice').value);
+            const medStock = parseInt(document.getElementById('medStock').value);
+            const medExpiry = document.getElementById('medExpiry').value;
+            const medDescription = document.getElementById('medDescription').value;
+            const medAlternatives = document.getElementById('medAlternatives').value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+            const existingMedicine = appState.medicines.find(m => m.name.toLowerCase() === medName.toLowerCase());
+            
+            if (existingMedicine) {
+                existingMedicine.price = medPrice;
+                existingMedicine.stock = medStock;
+                existingMedicine.expiryDate = medExpiry;
+                existingMedicine.description = medDescription;
+                existingMedicine.alternatives = medAlternatives;
+            } else {
+                const newId = crypto.randomUUID();
+                appState.medicines.push({
+                    id: newId,
+                    name: medName,
+                    price: medPrice,
+                    stock: medStock,
+                    expiryDate: medExpiry,
+                    description: medDescription,
+                    alternatives: medAlternatives,
+                    image: 'https://placehold.co/100x100?text=' + medName.split(' ')[0]
+                });
+            }
+
+            renderMedicines();
+            renderStockShelves();
+            renderSuggestions();
+            showModal(`${medName} stock updated successfully!`);
+            adminForm.reset();
+        });
+
+        // Initial data setup and rendering
+        const initApp = () => {
+             appState.medicines = [
+                { id: '1', name: 'Paracetamol 500mg', price: 25, stock: 50, expiryDate: '2026-12-31', description: 'Pain reliever and fever reducer.', alternatives: ['Calpol', 'Crocin'], image: 'https://cdn-icons-png.flaticon.com/512/2966/2966488.png' },
+                { id: '2', name: 'Aspirin 300mg', price: 45, stock: 0, expiryDate: '2024-01-15', description: 'Used to reduce fever and treat mild to moderate pain.', alternatives: ['Disprin 325mg', 'Clopidogrel 75mg'], image: 'https://cdn-icons-png.flaticon.com/512/2966/2966500.png' },
+                { id: '3', name: 'Insulin Injection', price: 350, stock: 5, expiryDate: '2025-11-20', description: 'Used to treat diabetes.', alternatives: [], image: 'https://cdn-icons-png.flaticon.com/512/2966/2966541.png' },
+                { id: '4', name: 'Cough Syrup', price: 120, stock: 30, expiryDate: '2026-08-01', description: 'Relieves cough and cold symptoms.', alternatives: [], image: 'https://cdn-icons-png.flaticon.com/512/2966/2966518.png' },
+                { id: '5', name: 'Multivitamin', price: 90, stock: 12, expiryDate: '2026-06-01', description: 'Dietary supplement to provide essential vitamins and minerals.', alternatives: [], image: 'https://cdn-icons-png.flaticon.com/512/825/825313.png' },
+                { id: '6', name: 'Antacid Tablets', price: 50, stock: 80, expiryDate: '2027-02-14', description: 'Used to relieve heartburn and indigestion.', alternatives: ['Gelusil', 'Digene'], image: 'https://cdn-icons-png.flaticon.com/512/2966/2966538.png' },
+            ];
+            renderMedicines();
+            renderStockShelves();
+            renderSuggestions();
+        };
+
+        // Run the app on window load
+        window.addEventListener('load', initApp);
+    </script>
+</body>
+</html>

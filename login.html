@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Telemedicine - Login/Register</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Reset */
+    * {
+      margin: 0; padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(120deg, #FCB9B2, #FED0BB);
+    }
+
+    .container {
+      display: flex;
+      width: 90%;
+      max-width: 1000px;
+      background: #FCB9B2;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(70,18,32,0.4);
+    }
+
+    /* Left Branding Panel */
+    .left-panel {
+      flex: 1;
+      background: linear-gradient(160deg, #461220, #8C2F39);
+      color: #FCB9B2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem;
+      text-align: center;
+    }
+    .left-panel i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    .left-panel h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .left-panel p {
+      font-size: 1rem;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    /* Right Auth Panel */
+    .right-panel {
+      flex: 1.2;
+      padding: 3rem 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #FED0BB;
+    }
+    .form-box {
+      width: 100%;
+      max-width: 360px;
+      background: #FCB9B2;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0px 6px 15px rgba(70,18,32,0.2);
+      animation: fadeIn 0.6s ease;
+    }
+    .form-box h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #461220;
+    }
+
+    /* Input */
+    .input-group {
+      position: relative;
+      margin-bottom: 1.2rem;
+    }
+    .input-group i {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      transform: translateY(-50%);
+      color: #8C2F39;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 0.9rem 0.9rem 0.9rem 2.5rem;
+      border: 1px solid #B23A48;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: 0.3s;
+      background: #FED0BB;
+      color: #461220;
+    }
+    .input-group input:focus {
+      border-color: #461220;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 0.9rem;
+      border: none;
+      border-radius: 8px;
+      background: #8C2F39;
+      color: #FCB9B2;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 0.5rem;
+    }
+    .btn:hover {
+      background: #B23A48;
+    }
+    .google-btn {
+      background: #FCB9B2;
+      color: #461220;
+      border: 1px solid #B23A48;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.3s;
+    }
+    .google-btn i {
+      color: #db4437;
+    }
+    .google-btn:hover {
+      background: #B23A48;
+      color: #FED0BB;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 1rem 0;
+      color: #461220;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #B23A48;
+    }
+    .divider span {
+      margin: 0 10px;
+    }
+
+    .toggle-text {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #461220;
+    }
+    .toggle-text a {
+      color: #8C2F39;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    /* Hide forms */
+    .hidden { display: none; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { flex-direction: column; }
+      .left-panel { display: none; }
+      .right-panel { flex: 1; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <i class="fa-solid fa-stethoscope"></i>
+      <h1>Rural Telemedicine</h1>
+      <p>Bringing accessible, multilingual, and AI-powered healthcare to every village.</p>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <!-- Login Form -->
+      <div class="form-box" id="loginBox">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <div class="input-group">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" id="loginEmail" placeholder="Email" required>
+          </div>
+          <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+          </div>
+          <button type="submit" class="btn">Login</button>
+          <div class="divider"><span>or</span></div>
+          <button type="button" class="btn google-btn">
+            <i class="fa-brands fa-google"></i> Continue with Google
+          </button>
+          <p class="toggle-text">Don’t have an account? <a onclick="showRegister()">Register</a></p>
+        </form>
+      </div>
+
+      <!-- Register Form -->
+      <div class="form-box hidden" id="registerBox">
+        <h2>Register</h2>
+        <form id="registerForm">
+          <div class="input-group">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" id="regName" placeholder="Full Name" required>
+          </div>
+          <div class="input-group">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" id="regEmail" placeholder="Email" required>
+          </div>
+          <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="regPassword" placeholder="Password" required>
+          </div>
+          <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="regConfirm" placeholder="Confirm Password" required>
+          </div>
+          <button type="submit" class="btn">Register</button>
+          <div class="divider"><span>or</span></div>
+          <button type="button" class="btn google-btn">
+            <i class="fa-brands fa-google"></i> Continue with Google
+          </button>
+          <p class="toggle-text">Already have an account? <a onclick="showLogin()">Login</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showRegister() {
+      document.getElementById("loginBox").classList.add("hidden");
+      document.getElementById("registerBox").classList.remove("hidden");
+    }
+    function showLogin() {
+      document.getElementById("registerBox").classList.add("hidden");
+      document.getElementById("loginBox").classList.remove("hidden");
+    }
+
+    // Dummy Login Validation
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      if(email === "user@example.com" && password === "123456") {
+        alert("Login successful!");
+        window.location.href = "home.html";
+      } else {
+        alert("Invalid credentials!");
+      }
+    });
+
+    // Dummy Register Validation
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("regName").value;
+      const email = document.getElementById("regEmail").value;
+      const pass = document.getElementById("regPassword").value;
+      const confirm = document.getElementById("regConfirm").value;
+
+      if(pass !== confirm) {
+        alert("Passwords do not match!");
+        return;
+      }
+      alert("Registration successful!");
+      window.location.href = "home.html";
+    });
+  </script>
+</body>
+</html>
